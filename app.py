@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
-from auth import auth_bp  
+from auth import auth_bp
+from download import download_bp
 from db import get_db, close_db 
 
 def create_app():
@@ -7,7 +8,7 @@ def create_app():
     app.secret_key = 'replace-with-your-secure-random-secret'
 
     app.register_blueprint(auth_bp)
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(download_bp)
 
     app.teardown_appcontext(close_db)
 
