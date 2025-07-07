@@ -1,0 +1,8 @@
+name: sensor_flask
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - flask>=2.0
+  - pymysql>=1.0
+  - werkzeug>=2.0
