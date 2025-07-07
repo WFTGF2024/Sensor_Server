@@ -6,12 +6,14 @@ from db import get_db, close_db
 def create_app():
     app = Flask(__name__)
     app.secret_key = 'replace-with-your-secure-random-secret'
-
+    
+    app.config['UPLOAD_ROOT'] = '/root/pythonproject_remote/download/'
+    
     app.register_blueprint(auth_bp)
     app.register_blueprint(download_bp)
-
+    
     app.teardown_appcontext(close_db)
-
+    
     @app.route('/users')
     def list_users():
         db = get_db()

@@ -1,11 +1,13 @@
 import pymysql
-from flask import g
+from flask import g, current_app
 
 DB_CONFIG = {
     "host": "localhost",
     "user": "zjh",
     "password": "20040624ZJH",
     "database": "modality",
+    "charset": "utf8mb4",
+    "use_unicode": True,
     "cursorclass": pymysql.cursors.DictCursor
 }
 
