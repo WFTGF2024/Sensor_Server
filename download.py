@@ -1,4 +1,5 @@
 import os
+import hashlib
 from datetime import datetime
 from flask import (
     Blueprint, request, jsonify, session,
@@ -33,7 +34,20 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
 
-    permission = request.form.get('file_permission', '').lower()
+    #SHA-256
+    file_bytes = file.read()
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+    file.seek(0)
+
+    #only
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("SELECT file_id FROM files WHERE file_hash = %s", (file_hash,))
+        if cur.fetchone():
+            return jsonify({"error": "file is already exist"}), 400
+
+    #default permission is private
+    permission = request.form.get('file_permission', 'private').lower()
     if permission not in ALLOWED_PERMISSIONS:
         return jsonify({"error": "file_permission must be 'public' or 'private'"}), 400
     description = request.form.get('description')
@@ -43,13 +57,12 @@ def upload_file():
     dest_path = os.path.join(user_folder, filename)
     file.save(dest_path)
 
-    db = get_db()
     with db.cursor() as cur:
         cur.execute("""
             INSERT INTO files
-              (user_id, file_name, file_path, description, file_permission)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, filename, dest_path, description, permission))
+              (user_id, file_name, file_path, description, file_permission, file_hash)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (user_id, filename, dest_path, description, permission, file_hash))
         file_id = cur.lastrowid
 
         if permission == 'public':
@@ -65,6 +78,7 @@ def upload_file():
         "file_name": filename,
         "file_permission": permission,
         "description": description,
+        "file_hash": file_hash,
         "uploaded_at": datetime.utcnow().isoformat() + 'Z'
     }), 201
 
@@ -77,7 +91,7 @@ def list_files():
     db = get_db()
     with db.cursor() as cur:
         cur.execute("""
-            SELECT file_id, file_name, updated_at, description, file_permission
+            SELECT file_id, file_name, updated_at, description, file_permission, file_hash
               FROM files
              WHERE user_id = %s
              ORDER BY updated_at DESC
