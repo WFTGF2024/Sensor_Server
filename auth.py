@@ -314,3 +314,32 @@ def change_password():
         db.commit()
 
     return jsonify({"message": "Password changed successfully"}), 200
+    
+    
+@auth_bp.route('/delete_account', methods=['POST'])
+def delete_account():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    data = request.get_json() or {}
+    pwd = data.get('password')
+    if not pwd:
+        return jsonify({"error": "Password required"}), 400
+
+    db = get_db()
+    # verify current password
+    with db.cursor() as cur:
+        cur.execute("SELECT password FROM users WHERE user_id=%s", (user_id,))
+        row = cur.fetchone()
+        if not row or not check_password_hash(row['password'], pwd):
+            return jsonify({"error": "Password incorrect"}), 403
+
+    # delete user (cascades to user_questions); also clean login status
+    with db.cursor() as cur:
+        cur.execute("DELETE FROM user_login_status WHERE user_id=%s", (user_id,))
+        cur.execute("DELETE FROM users WHERE user_id=%s", (user_id,))
+        db.commit()
+
+    session.clear()
+    return jsonify({"message": "Account deleted successfully"}), 200

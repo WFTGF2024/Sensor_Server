@@ -1,11 +1,13 @@
 import os
 import hashlib
 from datetime import datetime
+
 from flask import (
     Blueprint, request, jsonify, session,
     current_app, send_file
 )
 from werkzeug.utils import secure_filename
+
 from db import get_db
 
 download_bp = Blueprint('download', __name__, url_prefix='/download')
@@ -14,8 +16,8 @@ ALLOWED_PERMISSIONS = {'public', 'private'}
 
 def _get_user_folder(user_id):
     """
-    Ensure and return the path to the user's upload folder.
-    Subfolder is named by the user_id under UPLOAD_ROOT.
+    Ensure the user's upload folder exists and return its path.
+    The folder is named by the user_id under UPLOAD_ROOT.
     """
     root = current_app.config['UPLOAD_ROOT']
     folder = os.path.join(root, str(user_id))
@@ -24,53 +26,81 @@ def _get_user_folder(user_id):
 
 @download_bp.route('/upload', methods=['POST'])
 def upload_file():
+    # 检查登录
     if 'user_id' not in session:
         return jsonify({"error": "Authentication required"}), 401
     user_id = session['user_id']
 
+    # 确保有文件
     if 'file' not in request.files:
         return jsonify({"error": "No file provided"}), 400
     file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
 
-    #SHA-256
-    file_bytes = file.read()
-    file_hash = hashlib.sha256(file_bytes).hexdigest()
-    file.seek(0)
-
-    #only
-    db = get_db()
-    with db.cursor() as cur:
-        cur.execute("SELECT file_id FROM files WHERE file_hash = %s", (file_hash,))
-        if cur.fetchone():
-            return jsonify({"error": "file is already exist"}), 400
-
-    #default permission is private
-    permission = request.form.get('file_permission', 'private').lower()
-    if permission not in ALLOWED_PERMISSIONS:
-        return jsonify({"error": "file_permission must be 'public' or 'private'"}), 400
-    description = request.form.get('description')
+    # 内存处理阈值（字节），默认为 10 MB
+    threshold = current_app.config.get('IN_MEMORY_UPLOAD_LIMIT', 10 * 1024 * 1024)
+    total_size = request.content_length or 0
 
     filename = secure_filename(file.filename)
     user_folder = _get_user_folder(user_id)
     dest_path = os.path.join(user_folder, filename)
-    file.save(dest_path)
 
+    # 根据大小分流计算哈希和大小
+    if total_size <= threshold:
+        data = file.read()
+        file_hash = hashlib.sha256(data).hexdigest()
+        file_size = len(data)
+        file.seek(0)
+        file.save(dest_path)
+    else:
+        file.save(dest_path)
+        hasher = hashlib.sha256()
+        file_size = 0
+        with open(dest_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                hasher.update(chunk)
+                file_size += len(chunk)
+        file_hash = hasher.hexdigest()
+
+    # 查重
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT file_id FROM files WHERE file_hash = %s",
+            (file_hash,)
+        )
+        if cur.fetchone():
+            # 若是大文件已写入，删除磁盘文件
+            if total_size > threshold and os.path.exists(dest_path):
+                os.remove(dest_path)
+            return jsonify({"error": "file already exists"}), 400
+
+    # 权限校验
+    permission = request.form.get('file_permission', 'private').lower()
+    if permission not in ALLOWED_PERMISSIONS:
+        if total_size > threshold and os.path.exists(dest_path):
+            os.remove(dest_path)
+        return jsonify({"error": "file_permission must be 'public' or 'private'"}), 400
+    description = request.form.get('description')
+
+    # 插入 files 表，由触发器维护 file_public 和 user_storage
     with db.cursor() as cur:
         cur.execute("""
             INSERT INTO files
-              (user_id, file_name, file_path, description, file_permission, file_hash)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (user_id, filename, dest_path, description, permission, file_hash))
+              (user_id, file_name, file_path, description, file_permission, file_hash, file_size)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (
+            user_id,
+            filename,
+            dest_path,
+            description,
+            permission,
+            file_hash,
+            file_size
+        ))
         file_id = cur.lastrowid
-
-        if permission == 'public':
-            cur.execute("""
-                INSERT INTO file_public (file_id, user_id, file_path)
-                VALUES (%s, %s, %s)
-            """, (file_id, user_id, dest_path))
-    db.commit()
+        db.commit()
 
     return jsonify({
         "message": "Upload successful",
@@ -79,6 +109,7 @@ def upload_file():
         "file_permission": permission,
         "description": description,
         "file_hash": file_hash,
+        "file_size": file_size,
         "uploaded_at": datetime.utcnow().isoformat() + 'Z'
     }), 201
 
@@ -91,7 +122,8 @@ def list_files():
     db = get_db()
     with db.cursor() as cur:
         cur.execute("""
-            SELECT file_id, file_name, updated_at, description, file_permission, file_hash
+            SELECT file_id, file_name, updated_at, description,
+                   file_permission, file_hash, file_size
               FROM files
              WHERE user_id = %s
              ORDER BY updated_at DESC
@@ -111,18 +143,22 @@ def download_file(file_id):
 
     db = get_db()
     with db.cursor() as cur:
-        cur.execute("""
-            SELECT file_name, file_path
-              FROM files
-             WHERE file_id = %s AND user_id = %s
-        """, (file_id, user_id))
+        cur.execute(
+            "SELECT file_name, file_path FROM files WHERE file_id = %s AND user_id = %s",
+            (file_id, user_id)
+        )
         row = cur.fetchone()
 
     if not row:
         return jsonify({"error": "File not found"}), 404
 
+    path = row['file_path']
+    if not os.path.exists(path):
+        current_app.logger.warning(f"Missing file on disk: {path}")
+        return jsonify({"error": "File not found on server"}), 404
+
     return send_file(
-        row['file_path'],
+        path,
         as_attachment=True,
         download_name=row['file_name']
     )
@@ -155,9 +191,11 @@ def update_file_metadata(file_id):
         old_name = record['file_name']
         old_path = record['file_path']
         old_perm = record['file_permission']
+
         updates, params = [], []
         new_path = old_path
 
+        # 重命名
         if new_name and new_name != old_name:
             secure_new = secure_filename(new_name)
             user_folder = _get_user_folder(user_id)
@@ -166,23 +204,18 @@ def update_file_metadata(file_id):
             updates += ["file_name = %s", "file_path = %s"]
             params += [secure_new, new_path]
 
+        # 更新权限（由触发器同步到 file_public）
         if new_perm and new_perm != old_perm:
             updates.append("file_permission = %s")
             params.append(new_perm)
 
         if updates:
             params.append(file_id)
-            cur.execute("UPDATE files SET " + ", ".join(updates) + " WHERE file_id = %s", tuple(params))
-
-            if new_perm:
-                if new_perm == 'public':
-                    cur.execute("""
-                        INSERT IGNORE INTO file_public (file_id, user_id, file_path)
-                        VALUES (%s, %s, %s)
-                    """, (file_id, user_id, new_path))
-                else:
-                    cur.execute("DELETE FROM file_public WHERE file_id = %s", (file_id,))
-    db.commit()
+            cur.execute(
+                "UPDATE files SET " + ", ".join(updates) + " WHERE file_id = %s",
+                tuple(params)
+            )
+            db.commit()
 
     return jsonify({"message": "Update successful"}), 200
 
@@ -194,18 +227,18 @@ def delete_file(file_id):
 
     db = get_db()
     with db.cursor() as cur:
-        cur.execute("""
-            SELECT file_path
-              FROM files
-             WHERE file_id = %s AND user_id = %s
-        """, (file_id, user_id))
+        cur.execute(
+            "SELECT file_path FROM files WHERE file_id = %s AND user_id = %s",
+            (file_id, user_id)
+        )
         row = cur.fetchone()
         if not row:
             return jsonify({"error": "File not found"}), 404
-
         path = row['file_path']
+
+        # 删除 files，触发器会同步更新 user_storage & file_public
         cur.execute("DELETE FROM files WHERE file_id = %s", (file_id,))
-    db.commit()
+        db.commit()
 
     try:
         os.remove(path)
