@@ -1,31 +1,37 @@
 import os
 import logging
+import time
 from datetime import datetime
 from flask import Flask, request, jsonify
 from auth import auth_bp
 from download import download_bp
 from db import get_db, close_db
 
+# Rate limit globals
+WINDOW_DURATION = 10  # seconds
+MAX_CALLS = 1000
+_call_count = 0
+_window_start = time.time()
+
 def create_app():
+    global _call_count, _window_start
+
     app = Flask(__name__)
     app.secret_key = 'replace-with-your-secure-random-secret'
     app.config['UPLOAD_ROOT'] = '/root/pythonproject_remote/download/'
 
-    #Ensure log directory exists
+    # Ensure log directory exists
     log_dir = os.path.join(os.getcwd(), 'log')
     os.makedirs(log_dir, exist_ok=True)
-    #End ensure
 
-    #Logging configuration
+    # Logging configuration
     log_formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-    # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(log_formatter)
     app.logger.addHandler(console_handler)
 
-    # File handler, one file per day
     today = datetime.now().strftime('%Y-%m-%d')
     log_path = os.path.join(log_dir, f"{today}.txt")
     file_handler = logging.FileHandler(log_path)
@@ -35,10 +41,22 @@ def create_app():
 
     app.logger.setLevel(logging.INFO)
     app.logger.propagate = False
-    #End logging configuration
 
     @app.before_request
-    def log_request():
+    def rate_limit_and_log_request():
+        global _call_count, _window_start
+
+        now = time.time()
+        if now - _window_start <= WINDOW_DURATION:
+            _call_count += 1
+        else:
+            _window_start = now
+            _call_count = 1
+
+        if _call_count > MAX_CALLS:
+            app.logger.error(f"Rate limit exceeded: {_call_count} calls in {WINDOW_DURATION}s. Exiting.")
+            os._exit(1)
+
         app.logger.info(f"-> {request.remote_addr} {request.method} {request.full_path}")
 
     @app.after_request
@@ -53,7 +71,6 @@ def create_app():
     # Close database connection on teardown
     app.teardown_appcontext(close_db)
 
-    # Example route to list all users
     @app.route('/users')
     def list_users():
         db = get_db()
@@ -65,6 +82,7 @@ def create_app():
         return jsonify(users)
 
     return app
+
 if __name__ == '__main__':
     # Enable debug mode only for local development; use a WSGI server (e.g., Waitress) in production
     app = create_app()
