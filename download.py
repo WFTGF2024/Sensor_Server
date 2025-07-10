@@ -1,6 +1,8 @@
-import os
-import hashlib
+import os, hashlib, zipfile, tempfile, shutil
 from datetime import datetime
+from flask import Blueprint, request, jsonify, session, current_app
+from werkzeug.utils import secure_filename
+from db import get_db
 
 from flask import (
     Blueprint, request, jsonify, session,
@@ -38,48 +40,75 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
 
-    # 内存处理阈值（字节），默认为 10 MB
-    threshold = current_app.config.get('IN_MEMORY_UPLOAD_LIMIT', 10 * 1024 * 1024)
-    total_size = request.content_length or 0
-
     filename = secure_filename(file.filename)
     user_folder = _get_user_folder(user_id)
     dest_path = os.path.join(user_folder, filename)
 
-    # 根据大小分流计算哈希和大小
-    if total_size <= threshold:
-        data = file.read()
-        file_hash = hashlib.sha256(data).hexdigest()
-        file_size = len(data)
-        file.seek(0)
+    # 处理 ZIP 包：保存 -> 解压 -> 对解压后所有文件二进制读取计算哈希 -> 删除解压目录
+    if filename.lower().endswith('.zip'):
+        # 保存压缩包
         file.save(dest_path)
+        file_size = os.path.getsize(dest_path)
+
+        # 解压到临时目录，二进制读取所有文件计算 SHA-256
+        temp_dir = tempfile.mkdtemp(dir=user_folder)
+        try:
+            with zipfile.ZipFile(dest_path, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+
+            hasher = hashlib.sha256()
+            for root, _, files in os.walk(temp_dir):
+                for name in sorted(files):
+                    path = os.path.join(root, name)
+                    with open(path, 'rb') as f:
+                        while True:
+                            chunk = f.read(8 * 1024 * 1024)
+                            if not chunk:
+                                break
+                            hasher.update(chunk)
+            file_hash = hasher.hexdigest()
+        finally:
+            shutil.rmtree(temp_dir)
+
     else:
-        file.save(dest_path)
-        hasher = hashlib.sha256()
-        file_size = 0
-        with open(dest_path, 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
-                hasher.update(chunk)
-                file_size += len(chunk)
-        file_hash = hasher.hexdigest()
+        # 按大小阈值分流计算哈希和大小
+        threshold = current_app.config.get('IN_MEMORY_UPLOAD_LIMIT', 256 * 1024 * 1024)
+        total_size = request.content_length or 0
+
+        if total_size <= threshold:
+            data = file.read()               # 二进制数据
+            hasher = hashlib.sha256()
+            hasher.update(data)
+            file_hash = hasher.hexdigest()
+            file_size = len(data)
+            file.seek(0)
+            file.save(dest_path)
+        else:
+            file.save(dest_path)
+            hasher = hashlib.sha256()
+            file_size = 0
+            with open(dest_path, 'rb') as f:
+                while True:
+                    chunk = f.read(8 * 1024 * 1024)
+                    if not chunk:
+                        break
+                    hasher.update(chunk)
+                    file_size += len(chunk)
+            file_hash = hasher.hexdigest()
 
     # 查重
     db = get_db()
     with db.cursor() as cur:
-        cur.execute(
-            "SELECT file_id FROM files WHERE file_hash = %s",
-            (file_hash,)
-        )
+        cur.execute("SELECT file_id FROM files WHERE file_hash = %s", (file_hash,))
         if cur.fetchone():
-            # 若是大文件已写入，删除磁盘文件
-            if total_size > threshold and os.path.exists(dest_path):
+            if os.path.exists(dest_path):
                 os.remove(dest_path)
             return jsonify({"error": "file already exists"}), 400
 
     # 权限校验
     permission = request.form.get('file_permission', 'private').lower()
     if permission not in ALLOWED_PERMISSIONS:
-        if total_size > threshold and os.path.exists(dest_path):
+        if os.path.exists(dest_path):
             os.remove(dest_path)
         return jsonify({"error": "file_permission must be 'public' or 'private'"}), 400
     description = request.form.get('description')
@@ -112,6 +141,7 @@ def upload_file():
         "file_size": file_size,
         "uploaded_at": datetime.utcnow().isoformat() + 'Z'
     }), 201
+
 
 @download_bp.route('/files', methods=['GET'])
 def list_files():

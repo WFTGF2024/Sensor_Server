@@ -82,3 +82,93 @@
 [2025-07-08 17:27:13,575] INFO in app: <- 111.55.79.76 POST /auth/delete_account? -> 200 OK
 [2025-07-08 17:27:13,664] INFO in app: -> 111.55.79.76 POST /auth/login?
 [2025-07-08 17:27:13,669] INFO in app: <- 111.55.79.76 POST /auth/login? -> 401 UNAUTHORIZED
+[2025-07-08 17:36:08,849] INFO in app: -> 111.55.79.76 POST /auth/register?
+[2025-07-08 17:36:09,712] INFO in app: <- 111.55.79.76 POST /auth/register? -> 201 CREATED
+[2025-07-08 17:36:09,789] INFO in app: -> 111.55.79.76 POST /auth/login?
+[2025-07-08 17:36:10,724] INFO in app: <- 111.55.79.76 POST /auth/login? -> 200 OK
+[2025-07-08 17:36:10,809] INFO in app: -> 111.55.79.76 PATCH /auth/user?
+[2025-07-08 17:36:10,826] INFO in app: <- 111.55.79.76 PATCH /auth/user? -> 200 OK
+[2025-07-08 17:36:10,910] INFO in app: -> 111.55.79.76 PUT /auth/questions?
+[2025-07-08 17:36:10,920] INFO in app: <- 111.55.79.76 PUT /auth/questions? -> 200 OK
+[2025-07-08 17:36:10,999] INFO in app: -> 111.55.79.76 GET /auth/questions?
+[2025-07-08 17:36:11,006] INFO in app: <- 111.55.79.76 GET /auth/questions? -> 200 OK
+[2025-07-08 17:36:11,089] INFO in app: -> 111.55.79.76 POST /auth/questions/verify?
+[2025-07-08 17:36:11,095] INFO in app: <- 111.55.79.76 POST /auth/questions/verify? -> 200 OK
+[2025-07-08 17:36:11,185] INFO in app: -> 111.55.79.76 POST /auth/change_password?
+[2025-07-08 17:36:12,963] INFO in app: <- 111.55.79.76 POST /auth/change_password? -> 200 OK
+[2025-07-08 17:36:13,049] INFO in app: -> 111.55.79.76 POST /auth/logout?
+[2025-07-08 17:36:13,059] INFO in app: <- 111.55.79.76 POST /auth/logout? -> 200 OK
+[2025-07-08 17:36:13,149] INFO in app: -> 111.55.79.76 POST /auth/login?
+[2025-07-08 17:36:14,036] INFO in app: <- 111.55.79.76 POST /auth/login? -> 200 OK
+[2025-07-08 17:36:14,119] INFO in app: -> 111.55.79.76 POST /auth/reset_password?
+[2025-07-08 17:36:14,974] INFO in app: <- 111.55.79.76 POST /auth/reset_password? -> 200 OK
+[2025-07-08 17:36:15,059] INFO in app: -> 111.55.79.76 POST /auth/logout?
+[2025-07-08 17:36:15,069] INFO in app: <- 111.55.79.76 POST /auth/logout? -> 200 OK
+[2025-07-08 17:36:15,159] INFO in app: -> 111.55.79.76 POST /auth/login?
+[2025-07-08 17:36:16,067] INFO in app: <- 111.55.79.76 POST /auth/login? -> 200 OK
+[2025-07-08 17:36:16,155] INFO in app: -> 111.55.79.76 POST /download/upload?
+[2025-07-08 17:36:16,170] INFO in app: <- 111.55.79.76 POST /download/upload? -> 201 CREATED
+[2025-07-08 17:36:16,259] INFO in app: -> 111.55.79.76 GET /download/files?
+[2025-07-08 17:36:16,264] INFO in app: <- 111.55.79.76 GET /download/files? -> 200 OK
+[2025-07-08 17:36:16,339] INFO in app: -> 111.55.79.76 GET /download/download/9?
+[2025-07-08 17:36:16,349] INFO in app: <- 111.55.79.76 GET /download/download/9? -> 200 OK
+[2025-07-08 17:36:16,440] INFO in app: -> 111.55.79.76 PUT /download/file/9?
+[2025-07-08 17:36:16,455] INFO in app: <- 111.55.79.76 PUT /download/file/9? -> 200 OK
+[2025-07-08 17:36:16,529] INFO in app: -> 111.55.79.76 GET /download/files?
+[2025-07-08 17:36:16,535] INFO in app: <- 111.55.79.76 GET /download/files? -> 200 OK
+[2025-07-08 17:36:16,624] INFO in app: -> 111.55.79.76 DELETE /download/file/9?
+[2025-07-08 17:36:16,636] INFO in app: <- 111.55.79.76 DELETE /download/file/9? -> 200 OK
+[2025-07-08 17:36:16,729] INFO in app: -> 111.55.79.76 GET /download/files?
+[2025-07-08 17:36:16,734] INFO in app: <- 111.55.79.76 GET /download/files? -> 200 OK
+[2025-07-08 17:36:16,829] INFO in app: -> 111.55.79.76 POST /auth/delete_account?
+[2025-07-08 17:36:17,756] INFO in app: <- 111.55.79.76 POST /auth/delete_account? -> 200 OK
+[2025-07-08 17:36:17,860] INFO in app: -> 111.55.79.76 POST /auth/login?
+[2025-07-08 17:36:17,865] INFO in app: <- 111.55.79.76 POST /auth/login? -> 401 UNAUTHORIZED
+[2025-07-08 19:10:35,622] INFO in app: -> 205.210.31.149 GET /?
+[2025-07-08 19:10:35,623] INFO in app: <- 205.210.31.149 GET /? -> 404 NOT FOUND
+[2025-07-08 19:13:01,630] INFO in app: -> 167.94.138.39 GET /?
+[2025-07-08 19:13:01,630] INFO in app: <- 167.94.138.39 GET /? -> 404 NOT FOUND
+[2025-07-08 19:13:04,996] INFO in app: -> 167.94.138.39 PRI /*?
+[2025-07-08 19:13:04,997] INFO in app: <- 167.94.138.39 PRI /*? -> 404 NOT FOUND
+[2025-07-08 19:13:25,965] INFO in app: -> 167.94.138.39 GET /favicon.ico?
+[2025-07-08 19:13:25,966] INFO in app: <- 167.94.138.39 GET /favicon.ico? -> 404 NOT FOUND
+[2025-07-08 19:13:38,300] INFO in app: -> 167.94.138.39 PRI /*?
+[2025-07-08 19:13:38,301] INFO in app: <- 167.94.138.39 PRI /*? -> 404 NOT FOUND
+[2025-07-08 19:14:01,683] INFO in app: -> 167.94.138.39 GET /robots.txt?
+[2025-07-08 19:14:01,684] INFO in app: <- 167.94.138.39 GET /robots.txt? -> 404 NOT FOUND
+[2025-07-08 20:55:01,903] INFO in app: -> 36.152.116.248 POST /auth/login?
+[2025-07-08 20:55:03,430] INFO in app: <- 36.152.116.248 POST /auth/login? -> 200 OK
+[2025-07-08 20:55:10,003] INFO in app: -> 36.152.116.248 GET /auth/user?
+[2025-07-08 20:55:10,015] INFO in app: <- 36.152.116.248 GET /auth/user? -> 200 OK
+[2025-07-08 21:17:54,954] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:17:55,808] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:17:55,981] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:17:55,981] INFO in app: <- 36.152.115.65 GET /auth/user? -> 401 UNAUTHORIZED
+[2025-07-08 21:18:01,324] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:18:02,218] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:18:02,322] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:18:02,323] INFO in app: <- 36.152.115.65 GET /auth/user? -> 401 UNAUTHORIZED
+[2025-07-08 21:18:09,525] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:18:10,404] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:18:10,627] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:18:10,627] INFO in app: <- 36.152.115.65 GET /auth/user? -> 401 UNAUTHORIZED
+[2025-07-08 21:18:25,228] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:18:26,069] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:18:26,189] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:18:26,189] INFO in app: <- 36.152.115.65 GET /auth/user? -> 401 UNAUTHORIZED
+[2025-07-08 21:23:44,345] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:23:45,168] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:23:45,292] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:23:45,297] INFO in app: <- 36.152.115.65 GET /auth/user? -> 200 OK
+[2025-07-08 21:24:00,125] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:24:01,001] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:24:01,150] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:24:01,162] INFO in app: <- 36.152.115.65 GET /auth/user? -> 200 OK
+[2025-07-08 21:37:36,755] INFO in app: -> 36.152.115.65 POST /auth/login?
+[2025-07-08 21:37:37,629] INFO in app: <- 36.152.115.65 POST /auth/login? -> 200 OK
+[2025-07-08 21:37:37,821] INFO in app: -> 36.152.115.65 GET /auth/user?
+[2025-07-08 21:37:37,826] INFO in app: <- 36.152.115.65 GET /auth/user? -> 200 OK
+[2025-07-08 22:03:59,273] INFO in app: -> 3.132.23.201 GET /?
+[2025-07-08 22:03:59,274] INFO in app: <- 3.132.23.201 GET /? -> 404 NOT FOUND
+[2025-07-08 22:05:32,836] INFO in app: -> 3.132.23.201 GET /?
+[2025-07-08 22:05:32,836] INFO in app: <- 3.132.23.201 GET /? -> 404 NOT FOUND

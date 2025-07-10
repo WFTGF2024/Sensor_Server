@@ -343,3 +343,28 @@ def delete_account():
 
     session.clear()
     return jsonify({"message": "Account deleted successfully"}), 200
+
+@auth_bp.route('/user', methods=['GET'])
+def get_profile():
+    """
+    GET /auth/user
+    return user information
+    """
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    db = get_db()
+    with db.cursor() as cur:
+        cur.execute("""
+            SELECT user_id, username, email, phone, qq, wechat, point
+            FROM users
+            WHERE user_id=%s
+        """, (user_id,))
+        user = cur.fetchone()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # 移除可能为 None 的字段，或者直接返回全部字段也可以
+    return jsonify(user), 200
