@@ -1,22 +1,15 @@
 import pymysql
 from flask import g, current_app
-
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "zjh",
-    "password": "20040624ZJH",
-    "database": "modality",
-    "charset": "utf8mb4",
-    "use_unicode": True,
-    "cursorclass": pymysql.cursors.DictCursor
-}
+from config import current_config
 
 def get_db():
     """
     Cache the DB connection in Flask's `g` object to avoid reconnecting.
     """
     if 'db' not in g:
-        g.db = pymysql.connect(**DB_CONFIG)
+        db_config = current_config.get_db_config()
+        db_config["cursorclass"] = pymysql.cursors.DictCursor
+        g.db = pymysql.connect(**db_config)
     return g.db
 
 def close_db(error=None):

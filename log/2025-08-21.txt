@@ -1,0 +1,97 @@
+[2025-08-21 15:09:37,734] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:09:37,740] ERROR in app: Exception on /auth/login [POST]
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/root/Sensor_Flask/auth.py", line 67, in login
+  File "/root/Sensor_Flask/db.py", line 19, in get_db
+    g.db = pymysql.connect(**DB_CONFIG)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 361, in __init__
+    self.connect()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 669, in connect
+    self._request_authentication()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 979, in _request_authentication
+    auth_packet = _auth.caching_sha2_password_auth(self, auth_packet)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 267, in caching_sha2_password_auth
+    data = sha2_rsa_encrypt(conn.password, conn.salt, conn.server_public_key)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 144, in sha2_rsa_encrypt
+    raise RuntimeError(
+RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
+[2025-08-21 15:09:37,749] INFO in app: <- 39.144.156.96 POST /auth/login? -> 500 INTERNAL SERVER ERROR
+[2025-08-21 15:09:51,720] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:09:51,722] ERROR in app: Exception on /auth/login [POST]
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/root/Sensor_Flask/auth.py", line 67, in login
+  File "/root/Sensor_Flask/db.py", line 19, in get_db
+    g.db = pymysql.connect(**DB_CONFIG)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 361, in __init__
+    self.connect()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 669, in connect
+    self._request_authentication()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 979, in _request_authentication
+    auth_packet = _auth.caching_sha2_password_auth(self, auth_packet)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 267, in caching_sha2_password_auth
+    data = sha2_rsa_encrypt(conn.password, conn.salt, conn.server_public_key)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 144, in sha2_rsa_encrypt
+    raise RuntimeError(
+RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
+[2025-08-21 15:09:51,724] INFO in app: <- 39.144.156.96 POST /auth/login? -> 500 INTERNAL SERVER ERROR
+[2025-08-21 15:10:02,949] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:10:02,952] ERROR in app: Exception on /auth/login [POST]
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/root/Sensor_Flask/auth.py", line 67, in login
+  File "/root/Sensor_Flask/db.py", line 19, in get_db
+    g.db = pymysql.connect(**DB_CONFIG)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 361, in __init__
+    self.connect()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 669, in connect
+    self._request_authentication()
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/connections.py", line 979, in _request_authentication
+    auth_packet = _auth.caching_sha2_password_auth(self, auth_packet)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 267, in caching_sha2_password_auth
+    data = sha2_rsa_encrypt(conn.password, conn.salt, conn.server_public_key)
+  File "/opt/miniconda3/envs/sensor/lib/python3.10/site-packages/pymysql/_auth.py", line 144, in sha2_rsa_encrypt
+    raise RuntimeError(
+RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
+[2025-08-21 15:10:02,954] INFO in app: <- 39.144.156.96 POST /auth/login? -> 500 INTERNAL SERVER ERROR
+[2025-08-21 15:10:19,163] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:12:52,575] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:14:02,083] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:15:06,176] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:15:07,692] INFO in app: <- 39.144.156.96 POST /auth/login? -> 200 OK
+[2025-08-21 15:15:07,871] INFO in app: -> 39.144.156.96 GET /auth/user?
+[2025-08-21 15:15:07,887] INFO in app: <- 39.144.156.96 GET /auth/user? -> 200 OK
+[2025-08-21 15:18:25,401] INFO in app: -> 39.144.156.96 POST /auth/login?
+[2025-08-21 15:18:26,079] INFO in app: <- 39.144.156.96 POST /auth/login? -> 200 OK
+[2025-08-21 15:18:26,151] INFO in app: -> 39.144.156.96 GET /auth/user?
+[2025-08-21 15:18:26,161] INFO in app: <- 39.144.156.96 GET /auth/user? -> 200 OK
+[2025-08-21 15:18:36,146] INFO in app: -> 39.144.156.96 GET /download/files?
+[2025-08-21 15:18:36,191] INFO in app: <- 39.144.156.96 GET /download/files? -> 200 OK
+[2025-08-21 15:18:43,494] INFO in app: -> 39.144.156.96 POST /download/upload?
+[2025-08-21 15:18:43,635] INFO in app: <- 39.144.156.96 POST /download/upload? -> 201 CREATED
+[2025-08-21 16:48:03,854] INFO in app: -> 59.82.21.67 GET /?
+[2025-08-21 16:48:03,855] INFO in app: <- 59.82.21.67 GET /? -> 404 NOT FOUND
+[2025-08-21 17:42:57,310] INFO in app: -> 113.215.189.9 GET /?
+[2025-08-21 17:42:57,311] INFO in app: <- 113.215.189.9 GET /? -> 404 NOT FOUND

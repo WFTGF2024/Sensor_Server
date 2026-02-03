@@ -1,0 +1,4 @@
+[2025-08-03 22:14:32,160] INFO in app: -> 39.144.156.122 POST /auth/login?
+[2025-08-03 22:14:32,950] INFO in app: <- 39.144.156.122 POST /auth/login? -> 200 OK
+[2025-08-03 22:14:33,057] INFO in app: -> 39.144.156.122 GET /auth/user?
+[2025-08-03 22:14:33,073] INFO in app: <- 39.144.156.122 GET /auth/user? -> 200 OK
