@@ -14,21 +14,16 @@ class Config:
     # Flask settings
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'replace-with-your-secure-random-secret')
     DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-
-    # Session settings
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    PERMANENT_SESSION_LIFETIME = int(os.getenv('SESSION_LIFETIME', '86400'))  # 1 day = 86400 seconds
     
     # Database settings
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_USER = os.getenv('DB_USER', 'zjh')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '20040624ZJH')
     DB_NAME = os.getenv('DB_NAME', 'modality')
     DB_CHARSET = os.getenv('DB_CHARSET', 'utf8mb4')
     
     # File upload settings
-    UPLOAD_ROOT = os.getenv('UPLOAD_ROOT', '../data/download')
+    UPLOAD_ROOT = os.getenv('UPLOAD_ROOT', '/root/pythonproject_remote/download/')
     MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', '16777216'))  # 16MB default (16 * 1024 * 1024)
     
     # Rate limiting settings
@@ -42,19 +37,6 @@ class Config:
     # Logging settings
     LOG_DIR = os.getenv('LOG_DIR', 'log')
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-    
-    # Redis cache settings
-    REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
-    REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '')
-    REDIS_DB = int(os.getenv('REDIS_DB', '0'))
-    REDIS_CACHE_TTL = int(os.getenv('REDIS_CACHE_TTL', '3600'))  # 1 hour default
-    REDIS_ENABLED = os.getenv('REDIS_ENABLED', 'True').lower() == 'true'
-    
-    # Performance monitoring settings
-    MONITOR_ENABLED = os.getenv('MONITOR_ENABLED', 'True').lower() == 'true'
-    MONITOR_SAMPLE_RATE = float(os.getenv('MONITOR_SAMPLE_RATE', '0.1'))
-    MONITOR_METRICS_RETENTION = int(os.getenv('MONITOR_METRICS_RETENTION', '86400'))  # 24 hours
     
     @classmethod
     def get_db_config(cls):
@@ -70,20 +52,6 @@ class Config:
         }
     
     @classmethod
-    def get_redis_config(cls):
-        """Get Redis configuration as a dictionary."""
-        return {
-            "host": cls.REDIS_HOST,
-            "port": cls.REDIS_PORT,
-            "password": cls.REDIS_PASSWORD if cls.REDIS_PASSWORD else None,
-            "db": cls.REDIS_DB,
-            "decode_responses": True,
-            "socket_timeout": 5,
-            "socket_connect_timeout": 5,
-            "retry_on_timeout": True
-        }
-    
-    @classmethod
     def validate_config(cls):
         """Validate configuration and log warnings for insecure defaults."""
         warnings = []
@@ -93,18 +61,8 @@ class Config:
             warnings.append("Using default SECRET_KEY. Set FLASK_SECRET_KEY environment variable for production.")
         
         # Check for default database password
-        if not cls.DB_PASSWORD:
-            warnings.append("Database password not set. Set DB_PASSWORD environment variable for production.")
-        
-        # Check Redis configuration
-        if cls.REDIS_ENABLED:
-            if cls.REDIS_HOST == 'localhost' and cls.REDIS_PORT == 6379:
-                warnings.append("Using default Redis configuration. Consider using a dedicated Redis instance for production.")
-        
-        # Check monitoring configuration
-        if cls.MONITOR_ENABLED:
-            if cls.MONITOR_SAMPLE_RATE < 0 or cls.MONITOR_SAMPLE_RATE > 1:
-                warnings.append(f"Invalid MONITOR_SAMPLE_RATE: {cls.MONITOR_SAMPLE_RATE}. Should be between 0 and 1.")
+        if cls.DB_PASSWORD == '20040624ZJH':
+            warnings.append("Using default database password. Set DB_PASSWORD environment variable for production.")
         
         return warnings
 
