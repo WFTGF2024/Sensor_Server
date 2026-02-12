@@ -15,12 +15,8 @@ class Config:
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'replace-with-your-secure-random-secret')
     DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 
-    # Database settings
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_USER = os.getenv('DB_USER', 'zjh')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '20040624ZJH')
-    DB_NAME = os.getenv('DB_NAME', 'modality')
-    DB_CHARSET = os.getenv('DB_CHARSET', 'utf8mb4')
+    # Database settings (SQLite)
+    DB_PATH = os.getenv('DB_PATH', 'sensor.db')
 
     # File upload settings
     UPLOAD_ROOT = os.getenv('UPLOAD_ROOT', '/root/pythonproject_remote/download/')
@@ -60,13 +56,7 @@ class Config:
     def get_db_config(cls):
         """Get database configuration as a dictionary."""
         return {
-            "host": cls.DB_HOST,
-            "user": cls.DB_USER,
-            "password": cls.DB_PASSWORD,
-            "database": cls.DB_NAME,
-            "charset": cls.DB_CHARSET,
-            "use_unicode": True,
-            "cursorclass": None  # Will be set in db.py
+            "database": cls.DB_PATH
         }
 
     @classmethod
@@ -89,9 +79,9 @@ class Config:
         if cls.SECRET_KEY == 'replace-with-your-secure-random-secret':
             warnings.append("Using default SECRET_KEY. Set FLASK_SECRET_KEY environment variable for production.")
 
-        # Check for default database password
-        if cls.DB_PASSWORD == '20040624ZJH':
-            warnings.append("Using default database password. Set DB_PASSWORD environment variable for production.")
+        # Check for default database path
+        if cls.DB_PATH == 'sensor.db':
+            warnings.append("Using default database path. Set DB_PATH environment variable for production.")
 
         return warnings
 

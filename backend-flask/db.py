@@ -1,4 +1,4 @@
-import pymysql
+import sqlite3
 from flask import g, current_app
 from config import current_config
 
@@ -8,8 +8,8 @@ def get_db():
     """
     if 'db' not in g:
         db_config = current_config.get_db_config()
-        db_config["cursorclass"] = pymysql.cursors.DictCursor
-        g.db = pymysql.connect(**db_config)
+        g.db = sqlite3.connect(db_config["database"])
+        g.db.row_factory = sqlite3.Row
     return g.db
 
 def close_db(error=None):

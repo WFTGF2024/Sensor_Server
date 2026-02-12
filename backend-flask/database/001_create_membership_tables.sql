@@ -1,136 +1,149 @@
 -- 会员系统数据库表结构
 -- 创建时间: 2026-02-05
 -- 说明: 为 Sensor_Flask 项目添加会员系统功能
+-- 数据库: SQLite
 
 -- 1. 会员等级表
 CREATE TABLE IF NOT EXISTS membership_levels (
-    level_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '会员等级ID',
-    level_name VARCHAR(50) NOT NULL UNIQUE COMMENT '会员等级名称',
-    level_code VARCHAR(20) NOT NULL UNIQUE COMMENT '会员等级代码',
-    display_order INT DEFAULT 0 COMMENT '显示顺序',
-    description TEXT COMMENT '等级描述',
-    storage_limit BIGINT DEFAULT 1073741824 COMMENT '存储容量限制（字节），默认1GB',
-    max_file_size BIGINT DEFAULT 52428800 COMMENT '单文件最大大小（字节），默认50MB',
-    max_file_count INT DEFAULT 100 COMMENT '最大文件数量限制',
-    download_speed_limit INT DEFAULT 0 COMMENT '下载速度限制（KB/s），0表示无限制',
-    upload_speed_limit INT DEFAULT 0 COMMENT '上传速度限制（KB/s），0表示无限制',
-    daily_download_limit INT DEFAULT 0 COMMENT '每日下载次数限制，0表示无限制',
-    daily_upload_limit INT DEFAULT 0 COMMENT '每日上传次数限制，0表示无限制',
-    can_share_files BOOLEAN DEFAULT FALSE COMMENT '是否可以分享文件',
-    can_create_public_links BOOLEAN DEFAULT FALSE COMMENT '是否可以创建公开链接',
-    priority INT DEFAULT 0 COMMENT '会员优先级，数字越大优先级越高',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_level_code (level_code),
-    INDEX idx_display_order (display_order),
-    INDEX idx_priority (priority)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员等级表';
+    level_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level_name TEXT NOT NULL UNIQUE,
+    level_code TEXT NOT NULL UNIQUE,
+    display_order INTEGER DEFAULT 0,
+    description TEXT,
+    storage_limit INTEGER DEFAULT 1073741824,
+    max_file_size INTEGER DEFAULT 52428800,
+    max_file_count INTEGER DEFAULT 100,
+    download_speed_limit INTEGER DEFAULT 0,
+    upload_speed_limit INTEGER DEFAULT 0,
+    daily_download_limit INTEGER DEFAULT 0,
+    daily_upload_limit INTEGER DEFAULT 0,
+    can_share_files INTEGER DEFAULT 0,
+    can_create_public_links INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT 0,
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_level_code ON membership_levels(level_code);
+CREATE INDEX IF NOT EXISTS idx_display_order ON membership_levels(display_order);
+CREATE INDEX IF NOT EXISTS idx_priority ON membership_levels(priority);
 
 -- 2. 用户会员关系表
 CREATE TABLE IF NOT EXISTS user_memberships (
-    membership_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '会员记录ID',
-    user_id INT NOT NULL COMMENT '用户ID',
-    level_id INT NOT NULL COMMENT '会员等级ID',
-    start_date DATETIME NOT NULL COMMENT '会员开始时间',
-    end_date DATETIME COMMENT '会员结束时间，NULL表示永久会员',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否激活',
-    auto_renew BOOLEAN DEFAULT FALSE COMMENT '是否自动续费',
-    storage_used BIGINT DEFAULT 0 COMMENT '已使用的存储空间（字节）',
-    file_count INT DEFAULT 0 COMMENT '已上传的文件数量',
-    points_earned INT DEFAULT 0 COMMENT '累计获得的积分',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    membership_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    level_id INTEGER NOT NULL,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP,
+    is_active INTEGER DEFAULT 1,
+    auto_renew INTEGER DEFAULT 0,
+    storage_used INTEGER DEFAULT 0,
+    file_count INTEGER DEFAULT 0,
+    points_earned INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (level_id) REFERENCES membership_levels(level_id) ON DELETE RESTRICT,
-    UNIQUE KEY uk_user_active (user_id, is_active) COMMENT '确保每个用户只有一个激活的会员',
-    INDEX idx_user_id (user_id),
-    INDEX idx_level_id (level_id),
-    INDEX idx_end_date (end_date),
-    INDEX idx_is_active (is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户会员关系表';
+    UNIQUE (user_id, is_active)
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_user_id ON user_memberships(user_id);
+CREATE INDEX IF NOT EXISTS idx_level_id ON user_memberships(level_id);
+CREATE INDEX IF NOT EXISTS idx_end_date ON user_memberships(end_date);
+CREATE INDEX IF NOT EXISTS idx_is_active ON user_memberships(is_active);
 
 -- 3. 会员权益表（详细权益配置）
 CREATE TABLE IF NOT EXISTS membership_benefits (
-    benefit_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '权益ID',
-    level_id INT NOT NULL COMMENT '会员等级ID',
-    benefit_type VARCHAR(50) NOT NULL COMMENT '权益类型（storage_limit/file_size_limit/file_count_limit等）',
-    benefit_value VARCHAR(255) NOT NULL COMMENT '权益值',
-    description TEXT COMMENT '权益描述',
-    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    FOREIGN KEY (level_id) REFERENCES membership_levels(level_id) ON DELETE CASCADE,
-    INDEX idx_level_id (level_id),
-    INDEX idx_benefit_type (benefit_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员权益表';
+    benefit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level_id INTEGER NOT NULL,
+    benefit_type TEXT NOT NULL,
+    benefit_value TEXT NOT NULL,
+    description TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (level_id) REFERENCES membership_levels(level_id) ON DELETE CASCADE
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_level_id_benefits ON membership_benefits(level_id);
+CREATE INDEX IF NOT EXISTS idx_benefit_type ON membership_benefits(benefit_type);
 
 -- 4. 会员订单表
 CREATE TABLE IF NOT EXISTS membership_orders (
-    order_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '订单ID',
-    order_no VARCHAR(50) NOT NULL UNIQUE COMMENT '订单号',
-    user_id INT NOT NULL COMMENT '用户ID',
-    level_id INT NOT NULL COMMENT '购买的会员等级ID',
-    price DECIMAL(10, 2) NOT NULL COMMENT '订单金额',
-    currency VARCHAR(10) DEFAULT 'CNY' COMMENT '货币类型',
-    duration_days INT NOT NULL COMMENT '会员有效期（天）',
-    payment_method VARCHAR(50) COMMENT '支付方式',
-    payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending' COMMENT '支付状态',
-    payment_time TIMESTAMP NULL COMMENT '支付时间',
-    transaction_id VARCHAR(100) COMMENT '第三方交易ID',
-    remark TEXT COMMENT '备注',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_no TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    level_id INTEGER NOT NULL,
+    price REAL NOT NULL,
+    currency TEXT DEFAULT 'CNY',
+    duration_days INTEGER NOT NULL,
+    payment_method TEXT,
+    payment_status TEXT DEFAULT 'pending',
+    payment_time TIMESTAMP,
+    transaction_id TEXT,
+    remark TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (level_id) REFERENCES membership_levels(level_id) ON DELETE RESTRICT,
-    INDEX idx_user_id (user_id),
-    INDEX idx_order_no (order_no),
-    INDEX idx_payment_status (payment_status),
-    INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员订单表';
+    FOREIGN KEY (level_id) REFERENCES membership_levels(level_id) ON DELETE RESTRICT
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_user_id_orders ON membership_orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_no ON membership_orders(order_no);
+CREATE INDEX IF NOT EXISTS idx_payment_status ON membership_orders(payment_status);
+CREATE INDEX IF NOT EXISTS idx_created_at ON membership_orders(created_at);
 
 -- 5. 会员操作日志表
 CREATE TABLE IF NOT EXISTS membership_logs (
-    log_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
-    user_id INT NOT NULL COMMENT '用户ID',
-    action_type VARCHAR(50) NOT NULL COMMENT '操作类型（upgrade/downgrade/renew/expire等）',
-    action_detail TEXT COMMENT '操作详情',
-    old_level_id INT COMMENT '原会员等级ID',
-    new_level_id INT COMMENT '新会员等级ID',
-    operator_id INT COMMENT '操作人ID',
-    ip_address VARCHAR(100) COMMENT 'IP地址',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_action_type (action_type),
-    INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='会员操作日志表';
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    action_type TEXT NOT NULL,
+    action_detail TEXT,
+    old_level_id INTEGER,
+    new_level_id INTEGER,
+    operator_id INTEGER,
+    ip_address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_user_id_logs ON membership_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_action_type ON membership_logs(action_type);
+CREATE INDEX IF NOT EXISTS idx_created_at_logs ON membership_logs(created_at);
 
 -- 6. 积分记录表（扩展用户积分功能）
 CREATE TABLE IF NOT EXISTS point_records (
-    record_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
-    user_id INT NOT NULL COMMENT '用户ID',
-    points_change INT NOT NULL COMMENT '积分变化（正数为增加，负数为减少）',
-    points_after INT NOT NULL COMMENT '变化后的积分余额',
-    change_type VARCHAR(50) NOT NULL COMMENT '变化类型（register/login/upload/download/purchase/refund等）',
-    description TEXT COMMENT '描述',
-    related_id INT COMMENT '关联ID（如订单ID、文件ID等）',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_change_type (change_type),
-    INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='积分记录表';
+    record_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    points_change INTEGER NOT NULL,
+    points_after INTEGER NOT NULL,
+    change_type TEXT NOT NULL,
+    description TEXT,
+    related_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_user_id_points ON point_records(user_id);
+CREATE INDEX IF NOT EXISTS idx_change_type ON point_records(change_type);
+CREATE INDEX IF NOT EXISTS idx_created_at_points ON point_records(created_at);
 
 -- 插入默认会员等级数据
-INSERT INTO membership_levels (level_name, level_code, display_order, description, storage_limit, max_file_size, max_file_count, priority) VALUES
+INSERT OR IGNORE INTO membership_levels (level_name, level_code, display_order, description, storage_limit, max_file_size, max_file_count, priority) VALUES
 ('普通用户', 'free', 1, '免费用户，基础功能', 1073741824, 52428800, 100, 1),
 ('白银会员', 'silver', 2, '白银会员，更多存储空间', 5368709120, 104857600, 500, 2),
 ('黄金会员', 'gold', 3, '黄金会员，高级功能', 10737418240, 209715200, 1000, 3),
 ('钻石会员', 'diamond', 4, '钻石会员，尊享特权', 53687091200, 1073741824, 10000, 4);
 
 -- 插入默认会员权益数据
-INSERT INTO membership_benefits (level_id, benefit_type, benefit_value, description) VALUES
+INSERT OR IGNORE INTO membership_benefits (level_id, benefit_type, benefit_value, description) VALUES
 -- 免费用户权益
 (1, 'storage_limit', '1GB', '存储容量1GB'),
 (1, 'max_file_size', '50MB', '单文件最大50MB'),
@@ -160,14 +173,14 @@ INSERT INTO membership_benefits (level_id, benefit_type, benefit_value, descript
 (4, 'daily_upload_limit', '500', '每日上传500次');
 
 -- 为现有用户创建默认的免费会员记录
-INSERT INTO user_memberships (user_id, level_id, start_date, is_active)
-SELECT user_id, 1, NOW(), TRUE
+INSERT OR IGNORE INTO user_memberships (user_id, level_id, start_date, is_active)
+SELECT user_id, 1, datetime('now'), 1
 FROM users
-WHERE user_id NOT IN (SELECT user_id FROM user_memberships WHERE is_active = TRUE);
+WHERE user_id NOT IN (SELECT user_id FROM user_memberships WHERE is_active = 1);
 
 -- 创建存储使用量统计视图
-CREATE OR REPLACE VIEW v_user_storage_stats AS
-SELECT 
+CREATE VIEW IF NOT EXISTS v_user_storage_stats AS
+SELECT
     um.user_id,
     um.level_id,
     um.storage_used,
@@ -177,41 +190,19 @@ SELECT
     um.file_count,
     ml.level_name,
     ml.level_code,
-    CASE 
+    CASE
         WHEN um.storage_used >= ml.storage_limit THEN 1
         ELSE 0
     END AS is_storage_full,
-    ROUND((um.storage_used / ml.storage_limit) * 100, 2) AS storage_usage_percentage,
-    CASE 
+    ROUND((CAST(um.storage_used AS REAL) / ml.storage_limit) * 100, 2) AS storage_usage_percentage,
+    CASE
         WHEN um.end_date IS NULL THEN '永久'
-        ELSE DATE_FORMAT(um.end_date, '%Y-%m-%d')
+        ELSE strftime('%Y-%m-%d', um.end_date)
     END AS membership_end_date,
     um.is_active AS membership_active
 FROM user_memberships um
 INNER JOIN membership_levels ml ON um.level_id = ml.level_id
-WHERE um.is_active = TRUE;
+WHERE um.is_active = 1;
 
--- 添加触发器：当文件上传时自动更新用户存储使用量
-DELIMITER $$
-
-CREATE TRIGGER trg_file_upload_update_storage
-AFTER INSERT ON files
-FOR EACH ROW
-BEGIN
-    UPDATE user_memberships
-    SET storage_used = storage_used + NEW.file_size,
-        file_count = file_count + 1
-    WHERE user_id = NEW.user_id AND is_active = TRUE;
-END$$
-
-CREATE TRIGGER trg_file_delete_update_storage
-AFTER DELETE ON files
-FOR EACH ROW
-BEGIN
-    UPDATE user_memberships
-    SET storage_used = GREATEST(0, storage_used - OLD.file_size),
-        file_count = GREATEST(0, file_count - 1)
-    WHERE user_id = OLD.user_id AND is_active = TRUE;
-END$$
-
-DELIMITER ;
+-- 注意：SQLite不支持触发器在表创建后自动执行，需要手动创建触发器
+-- 如果需要触发器功能，可以在应用层实现存储使用量的更新
