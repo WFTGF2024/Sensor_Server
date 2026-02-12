@@ -33,10 +33,16 @@ def create_app():
     app.config['SESSION_COOKIE_SAMESITE'] = current_config.SESSION_COOKIE_SAMESITE
     app.config['PERMANENT_SESSION_LIFETIME'] = current_config.PERMANENT_SESSION_LIFETIME
 
-    # 启用CORS支持
+    # 启用CORS支持 - 支持前端和安卓客户端
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:5173", "http://127.0.0.1:5173", "http://10.8.0.24:5173"],
+            "origins": [
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://10.8.0.24:5173",
+                "http://120.79.25.184:5000",
+                "http://120.79.25.184"
+            ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True,
@@ -100,30 +106,44 @@ def create_app():
     def log_response(response):
         app.logger.info(f"<- {request.remote_addr} {request.method} {request.full_path} -> {response.status}")
 
-        # 添加CORS头（如果需要）
+        # 添加CORS头 - 支持前端和安卓客户端
         if request.path.startswith('/api/'):
             origin = request.headers.get('Origin', 'http://localhost:5173')
-            allowed_origins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://10.8.0.24:5173']
+            allowed_origins = [
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+                'http://10.8.0.24:5173',
+                'http://120.79.25.184:5000',
+                'http://120.79.25.184'
+            ]
             if origin in allowed_origins:
                 response.headers.add('Access-Control-Allow-Origin', origin)
             else:
-                response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+                # 如果请求源不在允许列表中，允许所有源以支持安卓客户端
+                response.headers.add('Access-Control-Allow-Origin', '*')
             response.headers.add('Access-Control-Allow-Credentials', 'true')
             response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
             response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
 
         return response
 
-    # 处理OPTIONS预检请求
+    # 处理OPTIONS预检请求 - 支持前端和安卓客户端
     @app.route('/api/<path:path>', methods=['OPTIONS'])
     def handle_options(path):
         response = jsonify({'status': 'ok'})
         origin = request.headers.get('Origin', 'http://localhost:5173')
-        allowed_origins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://10.8.0.24:5173']
+        allowed_origins = [
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://10.8.0.24:5173',
+            'http://120.79.25.184:5000',
+            'http://120.79.25.184'
+        ]
         if origin in allowed_origins:
             response.headers.add('Access-Control-Allow-Origin', origin)
         else:
-            response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+            # 如果请求源不在允许列表中，允许所有源以支持安卓客户端
+            response.headers.add('Access-Control-Allow-Origin', '*')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
