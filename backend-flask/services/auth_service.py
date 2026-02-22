@@ -231,27 +231,56 @@ class AuthService:
         new_hashed = generate_password_hash(new_password, method='pbkdf2:sha256', salt_length=16)
         self.user_repo.update_password(user_id, new_hashed)
     
-    def delete_account(self, user_id: int, password: str) -> None:
+    def delete_account(self, user_id: int, password: str = None, admin_delete: bool = False) -> None:
         """
         删除账户
-        
+
         Args:
             user_id: 用户ID
             password: 密码
-            
+            admin_delete: 是否是管理员删除
+
         Raises:
             AuthenticationError: 密码错误
         """
-        # 验证密码
-        user = self.user_repo.find_by_id(user_id)
-        if not user or not check_password_hash(user['password'], password):
-            raise AuthenticationError("密码错误")
-        
+        # 管理员删除不需要验证密码
+        if not admin_delete:
+            # 验证密码
+            user = self.user_repo.find_by_id(user_id)
+            if not user or not check_password_hash(user['password'], password):
+                raise AuthenticationError("密码错误")
+
         # 删除登录状态
         self.login_status_repo.delete_by_user_id(user_id)
-        
+
         # 删除用户
         self.user_repo.delete(user_id)
+
+    def admin_reset_password(self, user_id: int, new_password: str) -> None:
+        """
+        管理员重置用户密码
+
+        Args:
+            user_id: 用户ID
+            new_password: 新密码
+
+        Raises:
+            NotFoundError: 用户不存在
+            ValidationError: 密码验证失败
+        """
+        # 验证新密码强度
+        valid, msg = validate_password_strength(new_password)
+        if not valid:
+            raise ValidationError(msg)
+
+        # 检查用户是否存在
+        user = self.user_repo.find_by_id(user_id)
+        if not user:
+            raise NotFoundError("用户不存在")
+
+        # 更新密码
+        new_hashed = generate_password_hash(new_password, method='pbkdf2:sha256', salt_length=16)
+        self.user_repo.update_password(user_id, new_hashed)
     
     def get_profile(self, user_id: int) -> dict:
         """

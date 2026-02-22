@@ -10,6 +10,7 @@ from controllers.membership_controller import membership_bp
 from controllers.user_controller import list_users
 from controllers.web_controller import web_bp
 from controllers.monitor_controller import monitor_bp
+from controllers.admin_controller import admin_bp
 from db import get_db, close_db
 from redis_client import get_redis, close_redis
 from config import current_config
@@ -158,6 +159,7 @@ def create_app():
     app.register_blueprint(download_bp, url_prefix='/api/download')
     app.register_blueprint(membership_bp, url_prefix='/api/membership')
     app.register_blueprint(monitor_bp, url_prefix='/api/monitor')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
     # Web blueprint without /api prefix (for HTML pages)
     app.register_blueprint(web_bp)
 

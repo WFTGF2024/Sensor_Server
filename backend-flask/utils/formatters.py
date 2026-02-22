@@ -21,6 +21,8 @@ def format_bytes(bytes_value: int) -> str:
         >>> format_bytes(1073741824)
         '1.00 GB'
     """
+    if bytes_value is None:
+        bytes_value = 0
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
         if bytes_value < 1024:
             return f"{bytes_value:.2f} {unit}"

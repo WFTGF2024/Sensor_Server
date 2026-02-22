@@ -37,7 +37,7 @@ class UserRepository:
         cur = db.cursor()
         try:
             cur.execute("""
-                SELECT user_id, username, password, email, phone, qq, wechat
+                SELECT user_id, username, password, email, phone, qq, wechat, is_admin
                 FROM users
                 WHERE user_id = ?
             """, (user_id,))
@@ -78,7 +78,7 @@ class UserRepository:
         cur = db.cursor()
         try:
             cur.execute("""
-                SELECT user_id, username, password, email, phone, qq, wechat
+                SELECT user_id, username, password, email, phone, qq, wechat, is_admin
                 FROM users
                 WHERE username = ?
             """, (username,))
@@ -367,6 +367,44 @@ class UserRepository:
             cur.execute("SELECT COUNT(*) as count FROM users")
             result = cur.fetchone()
             return result['count'] if result else 0
+        finally:
+            cur.close()
+
+    def get_membership_stats(self) -> dict:
+        """
+        获取会员统计信息
+
+        Returns:
+            会员统计信息
+        """
+        db = get_db()
+        cur = db.cursor()
+        try:
+            # 按会员等级统计用户数
+            cur.execute("""
+                SELECT
+                    ml.level_name,
+                    ml.level_code,
+                    COUNT(um.user_id) as user_count
+                FROM membership_levels ml
+                LEFT JOIN user_memberships um ON ml.level_id = um.level_id AND um.is_active = 1
+                GROUP BY ml.level_id
+                ORDER BY ml.display_order
+            """)
+            level_stats = [dict(row) for row in cur.fetchall()]
+
+            # 获取总存储使用量
+            cur.execute("""
+                SELECT COALESCE(SUM(storage_used), 0) as total_storage
+                FROM user_memberships
+                WHERE is_active = 1
+            """)
+            total_storage = cur.fetchone()['total_storage']
+
+            return {
+                'level_stats': level_stats,
+                'total_storage': total_storage
+            }
         finally:
             cur.close()
 

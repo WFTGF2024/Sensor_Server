@@ -77,6 +77,7 @@ def login():
         # 设置session
         session['user_id'] = user['user_id']
         session['username'] = user['username']
+        session['is_admin'] = user.get('is_admin', False)
         session.permanent = True  # 设置为永久会话，有效期由 PERMANENT_SESSION_LIFETIME 控制
 
         # 格式化会员信息

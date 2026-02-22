@@ -8,7 +8,6 @@ import tempfile
 import shutil
 from datetime import datetime
 from flask import current_app, request
-from werkzeug.utils import secure_filename
 from repositories.file_repository import FileRepository
 from repositories.membership_repository import UserMembershipRepository
 from errors import ValidationError, NotFoundError
@@ -114,7 +113,7 @@ class FileService:
             raise ValidationError("file_permission 必须是 'public' 或 'private'")
         
         # 保存文件
-        filename = secure_filename(file.filename)
+        filename = file.filename  # 直接使用原始文件名
         user_folder = self._get_user_folder(user_id)
         dest_path = os.path.join(user_folder, filename)
         
@@ -313,11 +312,10 @@ class FileService:
         new_path = file['file_path']
         
         if file_name and file_name != file['file_name']:
-            secure_new = secure_filename(file_name)
             user_folder = self._get_user_folder(user_id)
-            new_path = os.path.join(user_folder, secure_new)
+            new_path = os.path.join(user_folder, file_name)
             os.rename(file['file_path'], new_path)
-            file_data['file_name'] = secure_new
+            file_data['file_name'] = file_name
             file_data['file_path'] = new_path
         
         if file_permission:
